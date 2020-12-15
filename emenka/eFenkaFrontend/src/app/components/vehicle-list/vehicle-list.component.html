@@ -1,0 +1,41 @@
+<div class="row mr-1">
+  <h1 class="col-10">Voertuigen</h1>
+  <button type="button" id="add-button" class="btn btn-primary col-md-2" (click)="navigateToNewVehicleComponent()">Toevoegen</button>
+</div>
+<div class="md-form">
+  <input
+    type="text"
+    [(ngModel)]="searchText"
+    class="form-control"
+    id="search"
+    (ngModelChange)="searchItems()"
+    mdbInput
+  />
+  <label for="search">Search</label>
+</div>
+<div class="table-responsive">
+  <table mdbTable #tableEl="mdbTable" stickyHeader="true" hover="true" bordered="true">
+    <caption>Lijst van alle voertuigen</caption>
+    <thead class="sticky-top">
+    <tr>
+      <th *ngFor="let head of headNames; let i = index" class="sortable" [mdbTableSort]="vehicles" [sortBy]="headElements[i]" scope="col">
+        {{head | titlecase}}
+        <mdb-icon fas icon="sort"></mdb-icon>
+      </th>
+    </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let vehicle of vehicles; let i = index" (click)="navigateToVehicleDetailsComponent(vehicle.id)">
+        <th scope="row">{{vehicle.brand.name}}</th>
+        <td >{{vehicle.model.name}}</td>
+        <td >{{vehicle.fuelType.name}}</td>
+        <td >{{vehicle.engineType.name}}</td>
+        <td >{{vehicle.doorType.name}}</td>
+        <td >{{vehicle.volume}}</td>
+        <td >{{vehicle.fiscalHP}}</td>
+        <td >{{vehicle.enginePower == null ? 'not set': vehicle.enginePower}}</td>
+        <td>{{vehicle.endDateDelivery| date:'dd/MM/yyyy'}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

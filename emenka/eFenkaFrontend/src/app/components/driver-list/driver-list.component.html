@@ -1,0 +1,42 @@
+
+<div class="row mr-1">
+  <h1 class="col-10">Bestuurders</h1>
+  <button type="button" id="add-button" class="btn btn-primary col-md-2" (click)="navigateToNewDriverComponent()">Toevoegen</button>
+</div>
+<div class="md-form">
+  <input
+    type="text"
+    [(ngModel)]="searchText"
+    class="form-control"
+    id="search"
+    (ngModelChange)="searchItems()"
+    mdbInput
+  />
+  <label for="search">Search</label>
+</div>
+<div class="table-responsive">
+  <table mdbTable #tableEl="mdbTable" stickyHeader="true" hover="true" bordered="true">
+    <caption>Lijst van alle bestuurders</caption>
+    <thead class="sticky-top">
+    <tr>
+      <th *ngFor="let head of headNames; let i = index" class="sortable" [mdbTableSort]="drivers" [sortBy]="headElements[i]" scope="col">
+        {{head | titlecase}}
+        <mdb-icon fas icon="sort"></mdb-icon>
+      </th>
+    </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let driver of drivers; let i = index" (click)="navigateToDriverDetailsComponent(driver.id)">
+        <th scope="row">{{driver.person.firstname}}</th>
+        <td >{{driver.person.lastname}}</td>
+        <td >{{driver.person.driversLicenseType}}</td>
+        <td >{{driver.person.driversLicenseNumber}}</td>
+        <td >{{getLanguageName(driver.person.language)}}</td>
+        <td >
+          <fa-icon [icon]="faCheck" *ngIf="isDriverActive(driver)"></fa-icon>
+          <fa-icon [icon]="faTimes" *ngIf="!isDriverActive(driver)"></fa-icon>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emenkabackend
+  namespace: development
+  labels:
+    app: emenkabackend
+    environment: development
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+        environment: development
+  template:
+    metadata:
+      name: emenkabackend
+      labels:
+        app: emenkabackend
+        environment: development
+    spec:
+      containers:
+      - name: emenkabackend
+        image: itprojectsnb2/emenka-deploy:eb_lts
+        ports:
+          - name: http
+            containerPort: 4450
+        resources: {}
+        imagePullPolicy: Always
+        securityContext:
+          privileged: false
+      restartPolicy: Always

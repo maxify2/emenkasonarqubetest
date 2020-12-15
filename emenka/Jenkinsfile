@@ -1,0 +1,75 @@
+pipeline {
+    agent any
+	stages {
+		stage('Pre Cleanup') {
+			steps {
+				sh 'ssh -i /root/.ssh/Dockerbuilder_key.pem docker@104.209.191.228 rm -rf eMenka'
+			}
+
+		}
+
+		stage('Building Dependencies') {
+			steps {
+				nodejs('nodejsinstall') {
+					dir('./eFenkaFrontend') {
+						sh 'npm install'
+						sh 'npm run build --prod'
+					}
+				}
+				withDotNet(sdk: '.netinstall'){
+					sh 'dotnet restore ./BackEnd/eMenka/*.sln'
+					sh 'dotnet build ./BackEnd/eMenka/eMenka.API/eMenka.API.csproj'
+				}
+			}
+		}
+		// stage('Running Tests') {
+        //     steps {
+        //         nodejs('nodejsinstall') {
+		// 			dir('./eFenkaFrontend') {
+		// 				sh 'npm run test --prod'
+		// 			}
+		// 		}
+		// 		withDotNet(sdk: '.netinstall'){
+		// 			sh 'dotnet test ./BackEnd/eMenka/eMenka.Tests/eMenka.Tests.csproj'
+		// 		}
+        //     }
+        // }
+		// stage('SonarQube: Code Quality') {
+		// 	steps{
+        //         script {
+        //             def scannerHome = tool 'sonarscanner';
+        //             withSonarQubeEnv("Xplore_sonarqube") {
+        //                 withMaven(jdk: 'xplore_java', maven: 'xplore_maven') {
+        //                     sh "mvn sonar:sonar -Dsonar.login=eed20fdd44466ef4f15f5dbda750cd8cbe829fb3 -Dsonar.projectKey=xplore_backend_${BUILD_NUMBER} -Dsonar.projectName=entiro_backend"
+        //                     dir('./src/main/webapp'){
+        //                         nodejs('xplore_nodejs') {
+        //                             sh 'npm test'
+        //                             sh "${tool("xplore_sonar")}/bin/sonar-scanner -Dsonar.projectKey=xplore_frontend_${BUILD_NUMBER}" 
+        //                         }     
+        //                     }
+        //                 }    
+        //             }
+        //         }   
+        //     }
+		// }
+		stage('Build Docker Image from Dockerfile') {
+			steps {
+				sh 'ssh -i /root/.ssh/Dockerbuilder_key.pem docker@104.209.191.228 mkdir eMenka'
+				sh 'scp -i /root/.ssh/Dockerbuilder_key.pem -r $WORKSPACE/BackEnd docker@104.209.191.228:~/eMenka'
+				sh 'scp -i /root/.ssh/Dockerbuilder_key.pem -r $WORKSPACE/eFenkaFrontend docker@104.209.191.228:~/eMenka'
+				sh 'ssh -i /root/.ssh/Dockerbuilder_key.pem docker@104.209.191.228 docker build -t itprojectsnb2/emenka-deploy:ef_lts ./eMenka/eFenkaFrontend/'
+				sh 'ssh -i /root/.ssh/Dockerbuilder_key.pem docker@104.209.191.228 docker build -t itprojectsnb2/emenka-deploy:eb_lts ./eMenka/BackEnd/eMenka/'
+				sh 'ssh -i /root/.ssh/Dockerbuilder_key.pem docker@104.209.191.228 docker push itprojectsnb2/emenka-deploy:ef_lts'
+				sh 'ssh -i /root/.ssh/Dockerbuilder_key.pem docker@104.209.191.228 docker push itprojectsnb2/emenka-deploy:eb_lts'
+			}
+
+		}
+		stage('Deploy Image to environment') {
+			steps {
+				sh 'ssh -i /root/.ssh/Dockerbuilder_key.pem docker@104.209.191.228 kubectl apply -f ./eMenka/eFenkaFrontend/angulardevelopment.yaml'
+				sh 'ssh -i /root/.ssh/Dockerbuilder_key.pem docker@104.209.191.228 kubectl apply -f ./eMenka/BackEnd/eMenka/emBackendPodDev.yaml'
+			}
+
+		}
+	}
+}

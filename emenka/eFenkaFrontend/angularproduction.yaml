@@ -1,0 +1,30 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: angularfrontend
+  namespace: development
+  labels:
+    app: angularfrontend
+    environment: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      environment: production
+  template:
+    metadata:
+      name: angularfrontend
+      labels:
+        environment: production
+    spec:
+      containers:
+      - name: angularfrontend
+        image: itprojectsnb2/emenka-deploy:ef_lts
+        ports:
+          - name: http
+            containerPort: 80
+        resources: {}
+        imagePullPolicy: Always
+        securityContext:
+          privileged: false
+      restartPolicy: Always

@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eMenkaBackend
+  namespace: default
+  labels:
+    app: eMenkaBackend
+    environment: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+        environment: production
+  template:
+    metadata:
+      name: eMenkaBackend
+      labels:
+        app: eMenkaBackend
+    spec:
+      containers:
+      - name: eMenkaBackend
+        image: itprojectsnb2/emenka-deploy:eb_lts
+        resources: {}
+        terminationMessagePath: "/dev/termination-log"
+        terminationMessagePolicy: File
+        imagePullPolicy: Always
+        securityContext:
+          privileged: false
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler

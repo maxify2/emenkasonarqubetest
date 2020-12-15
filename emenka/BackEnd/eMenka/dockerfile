@@ -1,0 +1,26 @@
+FROM mcr.microsoft.com/dotnet/aspnet:3.1 AS base
+WORKDIR /app
+EXPOSE 4450
+ENV ASPNETCORE_URLS=http://*:4450
+FROM mcr.microsoft.com/dotnet/sdk:3.1 AS build
+WORKDIR /src
+COPY *.sln .
+COPY ["eMenka.API/eMenka.API.csproj", "./eMenka.API/"]
+COPY ["eMenka.Business/eMenka.Business.csproj", "./eMenka.Business/"]
+COPY ["eMenka.Data/eMenka.Data.csproj", "./eMenka.Data/"]
+COPY ["eMenka.Domain/eMenka.Domain.csproj", "./eMenka.Domain/"]
+COPY ["eMenka.Tests/eMenka.Tests.csproj", "./eMenka.Tests/"]
+RUN dotnet restore
+COPY eMenka.API/. ./eMenka.API/
+COPY eMenka.Business/. ./eMenka.Business/
+COPY eMenka.Data/. ./eMenka.Data/
+COPY eMenka.Domain/. ./eMenka.Domain/
+COPY eMenka.Tests/. ./eMenka.Tests/
+
+RUN dotnet build "./eMenka.API/eMenka.API.csproj" -c Release -o /app
+FROM build AS publish
+RUN dotnet publish "./eMenka.API/eMenka.API.csproj" -c Release -o /app
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app .
+ENTRYPOINT ["dotnet", "eMenka.API.dll"]
